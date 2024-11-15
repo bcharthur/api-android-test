@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
 import androidx.core.app.ActivityCompat
 import com.example.api_meteo.ui.theme.ApiMeteoTheme
-import com.example.api_meteo.ItemScreen
 import com.example.api_meteo.viewmodel.ItemViewModel
 import com.example.api_meteo.viewmodel.WeatherViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -48,7 +47,10 @@ fun MainScreen(
                     )
                     Tab(
                         selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
+                        onClick = {
+                            selectedTab = 1
+                            itemViewModel.fetchItems() // Charger les items lors de la sélection de l'onglet
+                        },
                         text = { Text("Items") }
                     )
                 }

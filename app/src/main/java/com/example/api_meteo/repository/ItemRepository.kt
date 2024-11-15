@@ -8,12 +8,12 @@ import com.example.api_meteo.network.RetrofitInstance
 class ItemRepository {
     suspend fun getItems(): List<Item> {
         val response = RetrofitInstance.api.getItems()
-        return response.items.data // Accéder à la liste "data"
+        return response.items?.data ?: emptyList() // Gérer items null
     }
 
-    suspend fun addItem(item: Item): Item {
+    suspend fun addItem(item: Item): Item? {
         val response = RetrofitInstance.api.addItem(item)
-        return response.items.data.first() // Retourne l'item ajouté
+        return response.items?.data?.firstOrNull() // Retourner le premier item ou null
     }
 
     suspend fun updateItem(id: Int, nom: String): ItemResponse {
