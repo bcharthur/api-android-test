@@ -4,9 +4,11 @@ package com.example.api_meteo.network
 import com.example.api_meteo.model.Item
 import com.example.api_meteo.model.ItemResponse
 import com.example.api_meteo.model.WeatherResponse
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.http.GET
 import retrofit2.http.Body
 import retrofit2.http.DELETE
-import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -33,8 +35,17 @@ interface ApiService {
     suspend fun addItem(@Body item: Item): ItemResponse
 
     @PUT("/api/item/{id}")
-    suspend fun updateItem(@Path("id") id: Int, @Body item: Map<String, String>): ItemResponse
+    suspend fun updateItem(
+        @Path("id") id: Int,
+        @Body item: Map<String, String>
+    ): ItemResponse
 
     @DELETE("/api/item/{id}")
     suspend fun deleteItem(@Path("id") id: Int): ItemResponse
+
+    // Endpoint pour le téléchargement YouTube
+    @GET("/api/download")
+    suspend fun downloadVideo(
+        @Query("ytb_url") ytbUrl: String
+    ): Response<ResponseBody>
 }
