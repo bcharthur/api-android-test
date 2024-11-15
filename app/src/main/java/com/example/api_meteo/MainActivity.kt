@@ -1,4 +1,4 @@
-// app/src/main/java/com/example/api_meteo/ui/MainActivity.kt
+// app/src/main/java/com/example/api_meteo/MainActivity.kt
 package com.example.api_meteo
 
 import android.Manifest
@@ -15,10 +15,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import androidx.core.app.ActivityCompat
+import com.example.api_meteo.network.RetrofitInstance
+import com.example.api_meteo.repository.YtbDownloadRepository
+import com.example.api_meteo.ui.YtbDownloadScreen
 import com.example.api_meteo.ui.theme.ApiMeteoTheme
 import com.example.api_meteo.viewmodel.ItemViewModel
 import com.example.api_meteo.viewmodel.WeatherViewModel
+import com.example.api_meteo.viewmodel.YtbDownloadViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 
@@ -27,14 +30,15 @@ import com.google.android.gms.location.LocationServices
 fun MainScreen(
     onFetchWeatherWithLocation: () -> Unit,
     weatherViewModel: WeatherViewModel,
-    itemViewModel: ItemViewModel
+    itemViewModel: ItemViewModel,
+    ytbDownloadViewModel: YtbDownloadViewModel
 ) {
     var selectedTab by remember { mutableStateOf(0) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("API Météo & Items") }
+                title = { Text("API Météo & Gestion CRUD") }
             )
         },
         content = { padding ->
@@ -53,10 +57,16 @@ fun MainScreen(
                         },
                         text = { Text("Items") }
                     )
+                    Tab(
+                        selected = selectedTab == 2,
+                        onClick = { selectedTab = 2 },
+                        text = { Text("Téléchargement YouTube") }
+                    )
                 }
                 when (selectedTab) {
                     0 -> WeatherScreen(weatherViewModel, onFetchWeatherWithLocation)
                     1 -> ItemScreen(itemViewModel)
+                    2 -> YtbDownloadScreen(ytbDownloadViewModel)
                 }
             }
         }
@@ -67,6 +77,24 @@ class MainActivity : ComponentActivity() {
 
     private val weatherViewModel: WeatherViewModel by viewModels()
     private val itemViewModel: ItemViewModel by viewModels()
+
+    // Initialisation de Retrofit et ApiService
+    private val retrofit = RetrofitInstance
+    private val apiService = retrofit.api
+    private val ytbDownloadRepository by lazy { YtbDownloadRepository(apiService) }
+    private val ytbDownloadViewModel: YtbDownloadViewModel by viewModels {
+        // Fournir le repository au ViewModel
+        object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(YtbDownloadViewModel::class.java)) {
+                    @Suppress("UNCHECKED_CAST")
+                    return YtbDownloadViewModel(ytbDownloadRepository) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
+    }
+
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -90,7 +118,8 @@ class MainActivity : ComponentActivity() {
                 MainScreen(
                     onFetchWeatherWithLocation = { checkLocationPermissionAndFetchWeather() },
                     weatherViewModel = weatherViewModel,
-                    itemViewModel = itemViewModel
+                    itemViewModel = itemViewModel,
+                    ytbDownloadViewModel = ytbDownloadViewModel
                 )
             }
         }
@@ -120,10 +149,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getLastLocationAndFetchWeather() {
-        if (ActivityCompat.checkSelfPermission(
+        if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            ) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
