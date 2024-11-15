@@ -13,6 +13,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
+    // Endpoints pour la météo
     @GET("/api/get-weather")
     suspend fun getWeather(
         @Query("dept_number") deptNumber: String
@@ -24,20 +25,16 @@ interface ApiService {
         @Query("longitude") longitude: Double
     ): WeatherResponse
 
-
-    // Récupérer la liste des Items
+    // Endpoints pour les Items
     @GET("/api/items")
     suspend fun getItems(): ItemResponse
 
-    // Ajouter un nouvel Item
     @POST("/api/item")
     suspend fun addItem(@Body item: Item): ItemResponse
 
-    // Modifier un Item existant
     @PUT("/api/item/{id}")
     suspend fun updateItem(@Path("id") id: Int, @Body item: Map<String, String>): ItemResponse
 
-    // Supprimer un Item
     @DELETE("/api/item/{id}")
     suspend fun deleteItem(@Path("id") id: Int): ItemResponse
 }

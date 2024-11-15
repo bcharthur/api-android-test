@@ -22,7 +22,6 @@ class ItemViewModel : ViewModel() {
     private val _itemState = MutableStateFlow<ItemState>(ItemState.Empty)
     val itemState: StateFlow<ItemState> = _itemState
 
-
     fun fetchItems() {
         _itemState.value = ItemState.Loading
         viewModelScope.launch {
@@ -39,14 +38,12 @@ class ItemViewModel : ViewModel() {
         }
     }
 
-    // Méthode pour ajouter un item
     fun addItem(itemName: String) {
         _itemState.value = ItemState.Loading
         viewModelScope.launch {
             try {
-                val newItem = repository.addItem(Item(nom = itemName))
-                val currentItems = (_itemState.value as? ItemState.Success)?.items ?: emptyList()
-                _itemState.value = ItemState.Success(currentItems + newItem)
+                repository.addItem(Item(nom = itemName))
+                fetchItems() // Rafraîchir la liste après ajout
             } catch (e: Exception) {
                 _itemState.value = ItemState.Error(e.localizedMessage ?: "Erreur inconnue")
             }
@@ -54,10 +51,11 @@ class ItemViewModel : ViewModel() {
     }
 
     fun updateItem(id: Int, nom: String) {
+        _itemState.value = ItemState.Loading
         viewModelScope.launch {
             try {
                 repository.updateItem(id, nom)
-                fetchItems() // Rafraîchir la liste
+                fetchItems() // Rafraîchir la liste après mise à jour
             } catch (e: Exception) {
                 _itemState.value = ItemState.Error(e.localizedMessage ?: "Erreur inconnue")
             }
@@ -65,10 +63,11 @@ class ItemViewModel : ViewModel() {
     }
 
     fun deleteItem(id: Int) {
+        _itemState.value = ItemState.Loading
         viewModelScope.launch {
             try {
                 repository.deleteItem(id)
-                fetchItems() // Rafraîchir la liste
+                fetchItems() // Rafraîchir la liste après suppression
             } catch (e: Exception) {
                 _itemState.value = ItemState.Error(e.localizedMessage ?: "Erreur inconnue")
             }

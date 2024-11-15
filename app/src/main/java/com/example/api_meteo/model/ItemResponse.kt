@@ -3,11 +3,12 @@ package com.example.api_meteo.model
 
 data class ItemResponse(
     val status: String,
-    val items: ItemDataResponse
+    val items: ItemDataResponse? = null, // Rendre nullable
+    val message: String? = null
 )
 
 data class ItemDataResponse(
-    val data: List<Item>
+    val data: List<Item> = emptyList() // Fournir une valeur par défaut
 )
 
 data class Item(
